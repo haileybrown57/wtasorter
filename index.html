@@ -56,11 +56,10 @@
       background: #fff;
     }
 
-    /* === CRITICAL FIX: FORCE TEXT TO BE VISIBLE === */
+    /* FORCE TEXT TO BE VISIBLE (prevents Tumblr/theme CSS from hiding it) */
     .choice,
     .middle {
       color: #000 !important;
-      font-size: 20px !important;
       background: #fff !important;
       position: relative;
       z-index: 1;
@@ -72,6 +71,7 @@
       cursor: pointer;
       padding: 14px;
       user-select: none;
+      font-size: 28px;
     }
 
     .middle {
@@ -80,7 +80,7 @@
       cursor: pointer;
       padding: 10px;
       user-select: none;
-      font-size: 18px !important;
+      font-size: 18px;
     }
 
     .controls {
@@ -110,7 +110,7 @@
     }
 
     .results table {
-      width: 420px;
+      width: 520px;
       margin: 0 auto;
       border-collapse: collapse;
       font-size: 18px;
@@ -135,16 +135,9 @@
     }
 
     @media (max-width: 600px) {
-      .choice {
-        height: 140px;
-        font-size: 18px !important;
-      }
-      .middle {
-        font-size: 16px !important;
-      }
-      .results table {
-        width: 100%;
-      }
+      .choice { height: 140px; font-size: 20px; }
+      .middle { font-size: 16px; }
+      .results table { width: 100%; }
     }
   </style>
 </head>
@@ -159,7 +152,7 @@
       </p>
     </div>
 
-    <div id="battleNumber" class="status">battle #1</div>
+    <div id="battleNumber" class="status">battle #1<br>0% sorted.</div>
 
     <table role="presentation">
       <tr>
@@ -185,7 +178,7 @@
   </div>
 
   <script>
-    /* === TOP 100 WTA PLAYERS === */
+    // TOP 100 WTA PLAYERS (as provided)
     var namMember = [
       "Aryna Sabalenka","Iga Swiatek","Coco Gauff","Amanda Anisimova","Elena Rybakina",
       "Jessica Pegula","Madison Keys","Jasmine Paolini","Mirra Andreeva","Ekaterina Alexandrova",
@@ -210,81 +203,211 @@
       "Dalma Galfi","Oksana Selekhmeteva"
     ];
 
-    /* === SORTER ENGINE === */
-    let lstMember=[], parent=[], equal=[], rec=[];
-    let cmp1, cmp2, head1, head2, nrec;
-    let numQuestion, finishFlag;
+    // --- robust sorter engine (original merge-sort style) ---
+    var lstMember = [];
+    var parent = [];
+    var equal = [];
+    var rec = [];
 
-    function initList(){
-      lstMember=[]; parent=[]; equal=[]; rec=[];
-      let n=0;
-      lstMember[n]=[];
-      for(let i=0;i<namMember.length;i++) lstMember[n][i]=i;
-      parent[n]=-1; n++;
+    var cmp1, cmp2;
+    var head1, head2;
+    var nrec;
 
-      for(let i=0;i<lstMember.length;i++){
-        if(lstMember[i].length>=2){
-          let mid=Math.ceil(lstMember[i].length/2);
-          lstMember[n]=lstMember[i].slice(0,mid); parent[n++]=i;
-          lstMember[n]=lstMember[i].slice(mid); parent[n++]=i;
+    var numQuestion;
+    var totalSize;
+    var finishSize;
+    var finishFlag;
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function initList() {
+      lstMember = [];
+      parent = [];
+      equal = [];
+      rec = [];
+
+      var n = 0;
+
+      lstMember[n] = [];
+      for (var i = 0; i < namMember.length; i++) lstMember[n][i] = i;
+      parent[n] = -1;
+      totalSize = 0;
+      n++;
+
+      for (var i2 = 0; i2 < lstMember.length; i2++) {
+        if (lstMember[i2].length >= 2) {
+          var mid = Math.ceil(lstMember[i2].length / 2);
+
+          lstMember[n] = lstMember[i2].slice(0, mid);
+          totalSize += lstMember[n].length;
+          parent[n] = i2;
+          n++;
+
+          lstMember[n] = lstMember[i2].slice(mid);
+          totalSize += lstMember[n].length;
+          parent[n] = i2;
+          n++;
         }
       }
 
-      for(let i=0;i<=namMember.length;i++) equal[i]=-1;
-      cmp1=lstMember.length-2; cmp2=lstMember.length-1;
-      head1=0; head2=0; nrec=0;
-      numQuestion=1; finishFlag=0;
+      for (var j = 0; j < namMember.length; j++) rec[j] = 0;
+      nrec = 0;
+
+      for (var k = 0; k <= namMember.length; k++) equal[k] = -1;
+
+      cmp1 = lstMember.length - 2;
+      cmp2 = lstMember.length - 1;
+      head1 = 0;
+      head2 = 0;
+
+      numQuestion = 1;
+      finishSize = 0;
+      finishFlag = 0;
+
       showImage();
     }
 
-    function sortList(flag){
-      if(finishFlag) return;
+    function sortList(flag) {
+      if (finishFlag) return;
 
-      function push(v){ rec[nrec++]=v; }
+      if (flag < 0) {
+        rec[nrec++] = lstMember[cmp1][head1++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
+      } else if (flag > 0) {
+        rec[nrec++] = lstMember[cmp2][head2++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
+      } else {
+        rec[nrec++] = lstMember[cmp1][head1++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
 
-      if(flag<0) push(lstMember[cmp1][head1++]);
-      else if(flag>0) push(lstMember[cmp2][head2++]);
-      else {
-        push(lstMember[cmp1][head1++]);
-        equal[rec[nrec-1]]=lstMember[cmp2][head2];
-        push(lstMember[cmp2][head2++]);
+        equal[rec[nrec - 1]] = lstMember[cmp2][head2];
+
+        rec[nrec++] = lstMember[cmp2][head2++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
       }
 
-      if(head1===lstMember[cmp1].length && head2===lstMember[cmp2].length){
-        for(let i=0;i<rec.length;i++) lstMember[parent[cmp1]][i]=rec[i];
-        lstMember.pop(); lstMember.pop();
-        cmp1-=2; cmp2-=2;
-        head1=0; head2=0; rec=[]; nrec=0;
+      if (head1 < lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
+        while (head1 < lstMember[cmp1].length) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
+      } else if (head1 === lstMember[cmp1].length && head2 < lstMember[cmp2].length) {
+        while (head2 < lstMember[cmp2].length) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
       }
 
-      if(cmp1<0){
+      if (head1 === lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
+        for (var m = 0; m < lstMember[cmp1].length + lstMember[cmp2].length; m++) {
+          lstMember[parent[cmp1]][m] = rec[m];
+        }
+
+        lstMember.pop();
+        lstMember.pop();
+
+        cmp1 -= 2;
+        cmp2 -= 2;
+        head1 = 0;
+        head2 = 0;
+
+        for (var r = 0; r < namMember.length; r++) rec[r] = 0;
+        nrec = 0;
+      }
+
+      if (cmp1 < 0) {
+        document.getElementById("battleNumber").innerHTML =
+          "complete<br>100% sorted.";
         showResult();
-        finishFlag=1;
-      } else showImage();
-    }
-
-    function showImage(){
-      document.getElementById("battleNumber").textContent="battle #"+numQuestion++;
-      document.getElementById("leftField").textContent=namMember[lstMember[cmp1][head1]];
-      document.getElementById("rightField").textContent=namMember[lstMember[cmp2][head2]];
-    }
-
-    function showResult(){
-      let html="<table><tr><th>Rank</th><th>Player</th></tr>";
-      for(let i=0;i<namMember.length;i++){
-        html+="<tr><td>"+(i+1)+"</td><td>"+namMember[lstMember[0][i]]+"</td></tr>";
+        finishFlag = 1;
+      } else {
+        showImage();
       }
-      html+="</table>";
-      document.getElementById("resultField").innerHTML=html;
-      document.getElementById("battleNumber").textContent="Complete!";
     }
 
-    leftField.onclick=()=>sortList(-1);
-    rightField.onclick=()=>sortList(1);
-    bothBtn.onclick=noOpinionBtn.onclick=()=>sortList(0);
-    resetBtn.onclick=()=>initList();
-    shuffleBtn.onclick=()=>{ namMember.sort(()=>Math.random()-0.5); initList(); };
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
+    function showResult() {
+      var ranking = 1;
+      var sameRank = 1;
+      var html = "";
+
+      html += "<table><tr><th>rank</th><th>player</th></tr>";
+
+      for (var i = 0; i < namMember.length; i++) {
+        html += "<tr><td>" + ranking + "</td><td>" + escapeHtml(namMember[lstMember[0][i]]) + "</td></tr>";
+
+        if (i < namMember.length - 1) {
+          if (equal[lstMember[0][i]] === lstMember[0][i + 1]) {
+            sameRank++;
+          } else {
+            ranking += sameRank;
+            sameRank = 1;
+          }
+        }
+      }
+
+      html += "</table>";
+      document.getElementById("resultField").innerHTML = html;
+    }
+
+    function showImage() {
+      document.getElementById("battleNumber").innerHTML =
+        "battle #" + numQuestion + "<br>" + Math.floor((finishSize * 100) / totalSize) + "% sorted.";
+
+      document.getElementById("leftField").textContent =
+        namMember[lstMember[cmp1][head1]];
+
+      document.getElementById("rightField").textContent =
+        namMember[lstMember[cmp2][head2]];
+
+      numQuestion++;
+    }
+
+    // wire up buttons
+    document.getElementById("leftField").addEventListener("click", function () { sortList(-1); });
+    document.getElementById("rightField").addEventListener("click", function () { sortList(1); });
+    document.getElementById("bothBtn").addEventListener("click", function () { sortList(0); });
+    document.getElementById("noOpinionBtn").addEventListener("click", function () { sortList(0); });
+
+    document.getElementById("resetBtn").addEventListener("click", function () {
+      initList();
+    });
+
+    document.getElementById("shuffleBtn").addEventListener("click", function () {
+      shuffleArray(namMember);
+      initList();
+    });
+
+    // start
     initList();
   </script>
 </body>
