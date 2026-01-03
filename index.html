@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>WTA Top 100 Sorter</title>
+  <title>WTA Top 50 Sorter (with photos)</title>
 
   <style>
     body {
@@ -12,85 +12,83 @@
       color: #000;
       background: #fff;
     }
-
     .wrap {
-      max-width: 900px;
-      margin: 30px auto;
+      max-width: 980px;
+      margin: 28px auto;
       padding: 0 16px 40px;
     }
+    .header { text-align:center; margin-bottom: 14px; }
+    h1 { margin:0 0 10px; font-size: 30px; letter-spacing: .4px; }
+    .instructions { margin:0; font-size: 18px; line-height: 1.45; }
+    .status { text-align:center; margin: 20px 0 14px; font-size: 22px; font-weight: bold; }
 
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      font-size: 28px;
-      letter-spacing: 0.5px;
-    }
-
-    .instructions {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.45;
-    }
-
-    .status {
-      text-align: center;
-      margin: 24px 0 16px;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 14px 10px;
-    }
-
+    table { width: 100%; border-collapse: separate; border-spacing: 14px 10px; }
     td {
       border: 2px solid #000;
-      text-align: center;
+      background: #fff;
       vertical-align: middle;
+      text-align: center;
+    }
+
+    /* Choice cards */
+    .choice {
+      cursor: pointer;
+      user-select: none;
+      padding: 14px;
+      height: 220px;
+      position: relative;
+    }
+    .choiceInner {
+      height: 100%;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      place-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border: 2px solid #000;
+      border-radius: 999px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
       background: #fff;
     }
-
-    /* FORCE TEXT TO BE VISIBLE (prevents Tumblr/theme CSS from hiding it) */
-    .choice,
-    .middle {
-      color: #000 !important;
-      background: #fff !important;
-      position: relative;
-      z-index: 1;
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .placeholder {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      font-size: 44px;
+    }
+    .name {
+      font-size: 26px;
+      line-height: 1.15;
+      padding: 0 8px;
     }
 
-    .choice {
-      width: 42%;
-      height: 180px;
+    .middle {
       cursor: pointer;
-      padding: 14px;
       user-select: none;
-      font-size: 28px;
-    }
-
-    .middle {
-      width: 16%;
-      height: 80px;
-      cursor: pointer;
       padding: 10px;
-      user-select: none;
+      height: 90px;
       font-size: 18px;
     }
 
     .controls {
-      display: flex;
-      justify-content: center;
+      display:flex;
+      justify-content:center;
       gap: 14px;
-      margin-top: 20px;
+      margin-top: 18px;
       flex-wrap: wrap;
     }
-
     button {
       font: inherit;
       font-size: 18px;
@@ -99,44 +97,45 @@
       padding: 10px 16px;
       cursor: pointer;
     }
+    button:hover { background: #f0f0f0; }
 
-    button:hover {
-      background: #f0f0f0;
-    }
-
-    .results {
-      margin-top: 30px;
-      text-align: center;
-    }
-
+    .results { margin-top: 26px; text-align:center; }
     .results table {
-      width: 520px;
+      width: 720px;
       margin: 0 auto;
       border-collapse: collapse;
       font-size: 18px;
     }
-
-    .results th,
-    .results td {
+    .results th, .results td {
       border: 2px solid #000;
       padding: 8px 10px;
+      text-align: left;
     }
+    .results th { background: #e097d9; color: #fff; text-align: center; }
+    .rankCell { width: 70px; text-align: center; }
 
-    .results th {
-      background: #e097d9;
-      color: #fff;
+    .resultPlayer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 14px;
-      opacity: 0.85;
+    .resultAvatar {
+      width: 44px;
+      height: 44px;
+      border: 2px solid #000;
+      border-radius: 999px;
+      overflow: hidden;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
     }
+    .resultAvatar img { width:100%; height:100%; object-fit: cover; display:block; }
+    .footer { text-align:center; margin-top: 26px; font-size: 14px; opacity: .85; }
 
-    @media (max-width: 600px) {
-      .choice { height: 140px; font-size: 20px; }
-      .middle { font-size: 16px; }
+    @media (max-width: 700px) {
+      .choice { height: 180px; }
+      .avatar { width: 92px; height: 92px; }
+      .name { font-size: 20px; }
       .results table { width: 100%; }
     }
   </style>
@@ -145,7 +144,7 @@
 <body>
   <div class="wrap">
     <div class="header">
-      <h1>WTA TOP 100 SORTER</h1>
+      <h1>WTA TOP 50 SORTER</h1>
       <p class="instructions">
         Pick the player you prefer in each matchup to generate your personal ranking.<br>
         Note: frequent ties or “no opinion” will reduce ranking precision.
@@ -173,242 +172,36 @@
     <div id="resultField" class="results"></div>
 
     <div class="footer">
-      Top 100 WTA singles sorter (hosted on GitHub Pages, embedded in Tumblr).
+      Photos load from Wikipedia thumbnails. If a player has no thumbnail, a placeholder is shown.
     </div>
   </div>
 
   <script>
-    // TOP 100 WTA PLAYERS (as provided)
-    var namMember = [
-      "Aryna Sabalenka","Iga Swiatek","Coco Gauff","Amanda Anisimova","Elena Rybakina",
-      "Jessica Pegula","Madison Keys","Jasmine Paolini","Mirra Andreeva","Ekaterina Alexandrova",
-      "Belinda Bencic","Clara Tauson","Linda Noskova","Elina Svitolina","Emma Navarro",
-      "Naomi Osaka","Liudmila Samsonova","Victoria Mboko","Karolina Muchova","Elise Mertens",
-      "Diana Shnaider","Leylah Fernandez","Jelena Ostapenko","Qinwen Zheng","Paula Badosa",
-      "Marta Kostyuk","Dayana Yastremska","Sofia Kenin","Emma Raducanu","Veronika Kudermetova",
-      "McCartney Kessler","Maya Joint","Anna Kalinskaya","Marketa Vondrousova","Iva Jovic",
-      "Lois Boisson","Daria Kasatkina","Ann Li","Jaqueline Cristian","Eva Lys",
-      "Jessica Bouzas Maneiro","Marie Bouzkova","Sorana Cirstea","Ashlyn Krueger","Tatjana Maria",
-      "Laura Siegemund","Anastasia Pavlyuchenkova","Katerina Siniakova","Emiliana Arango",
-      "Anastasia Potapova","Cristina Bucsa","Maria Sakkari","Alexandra Eala","Magda Linette",
-      "Elsa Jacquemot","Janice Tjen","Xinyu Wang","Beatriz Haddad Maia","Magdalena Frech",
-      "Tereza Valentova","Hailey Baptiste","Anna Blinkova","Peyton Stearns","Danielle Collins",
-      "Barbora Krejcikova","Solana Sierra","Olga Danilovic","Sonay Kartal","Donna Vekic",
-      "Antonia Ruzic","Yulia Putintseva","Rebecca Sramkova","Francesca Jones","Anna Bondar",
-      "Ons Jabeur","Varvara Gracheva","Camila Osorio","Alycia Parks","Renata Zarazua",
-      "Ajla Tomljanovic","Shuai Zhang","Viktorija Golubic","Elisabetta Cocciaretto","Petra Marcinko",
-      "Caty McNally","Ella Seidel","Simona Waltert","Elena-Gabriela Ruse","Suzan Lamens",
-      "Lulu Sun","Panna Udvardy","Sara Bejlek","Katie Volynets","Moyuka Uchijima",
-      "Julia Grabher","Oleksandra Oliynykova","Kamilla Rakhimova","Kimberly Birrell",
-      "Dalma Galfi","Oksana Selekhmeteva"
-    ];
-
-    // --- robust sorter engine (original merge-sort style) ---
-    var lstMember = [];
-    var parent = [];
-    var equal = [];
-    var rec = [];
-
-    var cmp1, cmp2;
-    var head1, head2;
-    var nrec;
-
-    var numQuestion;
-    var totalSize;
-    var finishSize;
-    var finishFlag;
-
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    }
-
-    function initList() {
-      lstMember = [];
-      parent = [];
-      equal = [];
-      rec = [];
-
-      var n = 0;
-
-      lstMember[n] = [];
-      for (var i = 0; i < namMember.length; i++) lstMember[n][i] = i;
-      parent[n] = -1;
-      totalSize = 0;
-      n++;
-
-      for (var i2 = 0; i2 < lstMember.length; i2++) {
-        if (lstMember[i2].length >= 2) {
-          var mid = Math.ceil(lstMember[i2].length / 2);
-
-          lstMember[n] = lstMember[i2].slice(0, mid);
-          totalSize += lstMember[n].length;
-          parent[n] = i2;
-          n++;
-
-          lstMember[n] = lstMember[i2].slice(mid);
-          totalSize += lstMember[n].length;
-          parent[n] = i2;
-          n++;
-        }
-      }
-
-      for (var j = 0; j < namMember.length; j++) rec[j] = 0;
-      nrec = 0;
-
-      for (var k = 0; k <= namMember.length; k++) equal[k] = -1;
-
-      cmp1 = lstMember.length - 2;
-      cmp2 = lstMember.length - 1;
-      head1 = 0;
-      head2 = 0;
-
-      numQuestion = 1;
-      finishSize = 0;
-      finishFlag = 0;
-
-      showImage();
-    }
-
-    function sortList(flag) {
-      if (finishFlag) return;
-
-      if (flag < 0) {
-        rec[nrec++] = lstMember[cmp1][head1++];
-        finishSize++;
-        while (equal[rec[nrec - 1]] !== -1) {
-          rec[nrec++] = lstMember[cmp1][head1++];
-          finishSize++;
-        }
-      } else if (flag > 0) {
-        rec[nrec++] = lstMember[cmp2][head2++];
-        finishSize++;
-        while (equal[rec[nrec - 1]] !== -1) {
-          rec[nrec++] = lstMember[cmp2][head2++];
-          finishSize++;
-        }
-      } else {
-        rec[nrec++] = lstMember[cmp1][head1++];
-        finishSize++;
-        while (equal[rec[nrec - 1]] !== -1) {
-          rec[nrec++] = lstMember[cmp1][head1++];
-          finishSize++;
-        }
-
-        equal[rec[nrec - 1]] = lstMember[cmp2][head2];
-
-        rec[nrec++] = lstMember[cmp2][head2++];
-        finishSize++;
-        while (equal[rec[nrec - 1]] !== -1) {
-          rec[nrec++] = lstMember[cmp2][head2++];
-          finishSize++;
-        }
-      }
-
-      if (head1 < lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
-        while (head1 < lstMember[cmp1].length) {
-          rec[nrec++] = lstMember[cmp1][head1++];
-          finishSize++;
-        }
-      } else if (head1 === lstMember[cmp1].length && head2 < lstMember[cmp2].length) {
-        while (head2 < lstMember[cmp2].length) {
-          rec[nrec++] = lstMember[cmp2][head2++];
-          finishSize++;
-        }
-      }
-
-      if (head1 === lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
-        for (var m = 0; m < lstMember[cmp1].length + lstMember[cmp2].length; m++) {
-          lstMember[parent[cmp1]][m] = rec[m];
-        }
-
-        lstMember.pop();
-        lstMember.pop();
-
-        cmp1 -= 2;
-        cmp2 -= 2;
-        head1 = 0;
-        head2 = 0;
-
-        for (var r = 0; r < namMember.length; r++) rec[r] = 0;
-        nrec = 0;
-      }
-
-      if (cmp1 < 0) {
-        document.getElementById("battleNumber").innerHTML =
-          "complete<br>100% sorted.";
-        showResult();
-        finishFlag = 1;
-      } else {
-        showImage();
-      }
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function showResult() {
-      var ranking = 1;
-      var sameRank = 1;
-      var html = "";
-
-      html += "<table><tr><th>rank</th><th>player</th></tr>";
-
-      for (var i = 0; i < namMember.length; i++) {
-        html += "<tr><td>" + ranking + "</td><td>" + escapeHtml(namMember[lstMember[0][i]]) + "</td></tr>";
-
-        if (i < namMember.length - 1) {
-          if (equal[lstMember[0][i]] === lstMember[0][i + 1]) {
-            sameRank++;
-          } else {
-            ranking += sameRank;
-            sameRank = 1;
-          }
-        }
-      }
-
-      html += "</table>";
-      document.getElementById("resultField").innerHTML = html;
-    }
-
-    function showImage() {
-      document.getElementById("battleNumber").innerHTML =
-        "battle #" + numQuestion + "<br>" + Math.floor((finishSize * 100) / totalSize) + "% sorted.";
-
-      document.getElementById("leftField").textContent =
-        namMember[lstMember[cmp1][head1]];
-
-      document.getElementById("rightField").textContent =
-        namMember[lstMember[cmp2][head2]];
-
-      numQuestion++;
-    }
-
-    // wire up buttons
-    document.getElementById("leftField").addEventListener("click", function () { sortList(-1); });
-    document.getElementById("rightField").addEventListener("click", function () { sortList(1); });
-    document.getElementById("bothBtn").addEventListener("click", function () { sortList(0); });
-    document.getElementById("noOpinionBtn").addEventListener("click", function () { sortList(0); });
-
-    document.getElementById("resetBtn").addEventListener("click", function () {
-      initList();
-    });
-
-    document.getElementById("shuffleBtn").addEventListener("click", function () {
-      shuffleArray(namMember);
-      initList();
-    });
-
-    // start
-    initList();
-  </script>
-</body>
-</html>
+    /**
+     * Top 50 from your previous Top 100 list (first 50 entries).
+     * Each player includes a Wikipedia page title for fetching a thumbnail.
+     * (Most are just Name_Name; a few are more specific.)
+     */
+    const players = [
+      { name: "Aryna Sabalenka", wiki: "Aryna_Sabalenka" },
+      { name: "Iga Swiatek", wiki: "Iga_%C5%9Awi%C4%85tek" },
+      { name: "Coco Gauff", wiki: "Coco_Gauff" },
+      { name: "Amanda Anisimova", wiki: "Amanda_Anisimova" },
+      { name: "Elena Rybakina", wiki: "Elena_Rybakina" },
+      { name: "Jessica Pegula", wiki: "Jessica_Pegula" },
+      { name: "Madison Keys", wiki: "Madison_Keys" },
+      { name: "Jasmine Paolini", wiki: "Jasmine_Paolini" },
+      { name: "Mirra Andreeva", wiki: "Mirra_Andreeva" },
+      { name: "Ekaterina Alexandrova", wiki: "Ekaterina_Alexandrova" },
+      { name: "Belinda Bencic", wiki: "Belinda_Bencic" },
+      { name: "Clara Tauson", wiki: "Clara_Tauson" },
+      { name: "Linda Noskova", wiki: "Linda_Noskova" },
+      { name: "Elina Svitolina", wiki: "Elina_Svitolina" },
+      { name: "Emma Navarro", wiki: "Emma_Navarro_(tennis)" },
+      { name: "Naomi Osaka", wiki: "Naomi_Osaka" },
+      { name: "Liudmila Samsonova", wiki: "Liudmila_Samsonova" },
+      { name: "Victoria Mboko", wiki: "Victoria_Mboko" },
+      { name: "Karolina Muchova", wiki: "Karol%C3%ADna_Muchov%C3%A1" },
+      { name: "Elise Mertens", wiki: "Elise_Mertens" },
+      { name: "Diana Shnaider", wiki: "Diana_Shnaider" },
+      { name: "Leylah Fernandez", wiki: "L
