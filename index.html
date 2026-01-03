@@ -204,4 +204,305 @@
       { name: "Karolina Muchova", wiki: "Karol%C3%ADna_Muchov%C3%A1" },
       { name: "Elise Mertens", wiki: "Elise_Mertens" },
       { name: "Diana Shnaider", wiki: "Diana_Shnaider" },
-      { name: "Leylah Fernandez", wiki: "L
+      { name: "Leylah Fernandez", wiki: "Leylah_Fernandez" },
+      { name: "Jelena Ostapenko", wiki: "Je%C4%BCena_Ostapenko" },
+      { name: "Qinwen Zheng", wiki: "Zheng_Qinwen" },
+      { name: "Paula Badosa", wiki: "Paula_Badosa" },
+      { name: "Marta Kostyuk", wiki: "Marta_Kostyuk" },
+      { name: "Dayana Yastremska", wiki: "Dayana_Yastremska" },
+      { name: "Sofia Kenin", wiki: "Sofia_Kenin" },
+      { name: "Emma Raducanu", wiki: "Emma_Raducanu" },
+      { name: "Veronika Kudermetova", wiki: "Veronika_Kudermetova" },
+      { name: "McCartney Kessler", wiki: "McCartney_Kessler" },
+      { name: "Maya Joint", wiki: "Maya_Joint" },
+      { name: "Anna Kalinskaya", wiki: "Anna_Kalinskaya" },
+      { name: "Marketa Vondrousova", wiki: "Mark%C3%A9ta_Vondrou%C5%A1ov%C3%A1" },
+      { name: "Iva Jovic", wiki: "Iva_Jovic" },
+      { name: "Lois Boisson", wiki: "Lo%C3%AFs_Boisson" },
+      { name: "Daria Kasatkina", wiki: "Daria_Kasatkina" },
+      { name: "Ann Li", wiki: "Ann_Li_(tennis)" },
+      { name: "Jaqueline Cristian", wiki: "Jaqueline_Cristian" },
+      { name: "Eva Lys", wiki: "Eva_Lys" },
+      { name: "Jessica Bouzas Maneiro", wiki: "Jessica_Bouzas_Maneiro" },
+      { name: "Marie Bouzkova", wiki: "Marie_Bouzkov%C3%A1" },
+      { name: "Sorana Cirstea", wiki: "Sorana_C%C3%AErstea" },
+      { name: "Ashlyn Krueger", wiki: "Ashlyn_Krueger" },
+      { name: "Tatjana Maria", wiki: "Tatjana_Maria" },
+      { name: "Laura Siegemund", wiki: "Laura_Siegemund" },
+      { name: "Anastasia Pavlyuchenkova", wiki: "Anastasia_Pavlyuchenkova" },
+      { name: "Katerina Siniakova", wiki: "Kate%C5%99ina_Siniakov%C3%A1" },
+      { name: "Emiliana Arango", wiki: "Emiliana_Arango" },
+      { name: "Anastasia Potapova", wiki: "Anastasia_Potapova" }
+    ];
+
+    // --- Wikipedia thumbnail fetch (cached) ---
+    const thumbCache = new Map();
+    async function getThumb(wikiTitle) {
+      if (!wikiTitle) return null;
+      if (thumbCache.has(wikiTitle)) return thumbCache.get(wikiTitle);
+
+      try {
+        const url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + wikiTitle;
+        const res = await fetch(url, { mode: "cors" });
+        if (!res.ok) throw new Error("No summary for " + wikiTitle);
+        const data = await res.json();
+        const thumb = data?.thumbnail?.source || null;
+        thumbCache.set(wikiTitle, thumb);
+        return thumb;
+      } catch (e) {
+        thumbCache.set(wikiTitle, null);
+        return null;
+      }
+    }
+
+    function makeChoiceHTML(player, imgUrl) {
+      const safeName = player.name;
+      const avatar = imgUrl
+        ? `<div class="avatar"><img src="${imgUrl}" alt="${safeName}"></div>`
+        : `<div class="avatar"><div class="placeholder">🎾</div></div>`;
+
+      return `
+        <div class="choiceInner">
+          ${avatar}
+          <div class="name">${safeName}</div>
+        </div>
+      `;
+    }
+
+    // --- robust sorter engine (merge-sort style) ---
+    let namMember = players.map((p, i) => i); // indices into players
+    let lstMember = [];
+    let parent = [];
+    let equal = [];
+    let rec = [];
+
+    let cmp1, cmp2;
+    let head1, head2;
+    let nrec;
+    let numQuestion;
+    let totalSize;
+    let finishSize;
+    let finishFlag;
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+
+    function initList() {
+      lstMember = [];
+      parent = [];
+      equal = [];
+      rec = [];
+
+      let n = 0;
+
+      lstMember[n] = [];
+      for (let i = 0; i < namMember.length; i++) lstMember[n][i] = namMember[i];
+
+      parent[n] = -1;
+      totalSize = 0;
+      n++;
+
+      for (let i = 0; i < lstMember.length; i++) {
+        if (lstMember[i].length >= 2) {
+          const mid = Math.ceil(lstMember[i].length / 2);
+
+          lstMember[n] = lstMember[i].slice(0, mid);
+          totalSize += lstMember[n].length;
+          parent[n] = i;
+          n++;
+
+          lstMember[n] = lstMember[i].slice(mid);
+          totalSize += lstMember[n].length;
+          parent[n] = i;
+          n++;
+        }
+      }
+
+      for (let i = 0; i < namMember.length; i++) rec[i] = 0;
+      nrec = 0;
+
+      for (let i = 0; i <= namMember.length; i++) equal[i] = -1;
+
+      cmp1 = lstMember.length - 2;
+      cmp2 = lstMember.length - 1;
+      head1 = 0;
+      head2 = 0;
+
+      numQuestion = 1;
+      finishSize = 0;
+      finishFlag = 0;
+
+      showImage();
+    }
+
+    function sortList(flag) {
+      if (finishFlag) return;
+
+      if (flag < 0) {
+        rec[nrec++] = lstMember[cmp1][head1++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
+      } else if (flag > 0) {
+        rec[nrec++] = lstMember[cmp2][head2++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
+      } else {
+        rec[nrec++] = lstMember[cmp1][head1++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
+
+        equal[rec[nrec - 1]] = lstMember[cmp2][head2];
+
+        rec[nrec++] = lstMember[cmp2][head2++];
+        finishSize++;
+        while (equal[rec[nrec - 1]] !== -1) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
+      }
+
+      if (head1 < lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
+        while (head1 < lstMember[cmp1].length) {
+          rec[nrec++] = lstMember[cmp1][head1++];
+          finishSize++;
+        }
+      } else if (head1 === lstMember[cmp1].length && head2 < lstMember[cmp2].length) {
+        while (head2 < lstMember[cmp2].length) {
+          rec[nrec++] = lstMember[cmp2][head2++];
+          finishSize++;
+        }
+      }
+
+      if (head1 === lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
+        for (let i = 0; i < lstMember[cmp1].length + lstMember[cmp2].length; i++) {
+          lstMember[parent[cmp1]][i] = rec[i];
+        }
+
+        lstMember.pop();
+        lstMember.pop();
+
+        cmp1 -= 2;
+        cmp2 -= 2;
+        head1 = 0;
+        head2 = 0;
+
+        for (let i = 0; i < namMember.length; i++) rec[i] = 0;
+        nrec = 0;
+      }
+
+      if (cmp1 < 0) {
+        document.getElementById("battleNumber").innerHTML = "complete<br>100% sorted.";
+        showResult();
+        finishFlag = 1;
+      } else {
+        showImage();
+      }
+    }
+
+    async function renderSide(sideEl, playerIndex) {
+      const p = players[playerIndex];
+      // fetch thumb (cached), then render
+      const thumb = await getThumb(p.wiki);
+      sideEl.innerHTML = makeChoiceHTML(p, thumb);
+    }
+
+    function showImage() {
+      const pct = totalSize ? Math.floor((finishSize * 100) / totalSize) : 0;
+      document.getElementById("battleNumber").innerHTML =
+        "battle #" + numQuestion + "<br>" + pct + "% sorted.";
+
+      const leftIndex = lstMember[cmp1][head1];
+      const rightIndex = lstMember[cmp2][head2];
+
+      const leftEl = document.getElementById("leftField");
+      const rightEl = document.getElementById("rightField");
+
+      // quick placeholder render first (instant), then swap in images when ready
+      leftEl.innerHTML = makeChoiceHTML(players[leftIndex], null);
+      rightEl.innerHTML = makeChoiceHTML(players[rightIndex], null);
+
+      renderSide(leftEl, leftIndex);
+      renderSide(rightEl, rightIndex);
+
+      numQuestion++;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function showResult() {
+      // lstMember[0] holds sorted indices
+      let html = "<table><tr><th>rank</th><th>player</th></tr>";
+
+      for (let i = 0; i < players.length; i++) {
+        const idx = lstMember[0][i];
+        const p = players[idx];
+        const thumb = await getThumb(p.wiki);
+
+        const avatar = thumb
+          ? `<span class="resultAvatar"><img src="${thumb}" alt="${escapeHtml(p.name)}"></span>`
+          : `<span class="resultAvatar"><span class="placeholder" style="font-size:18px;">🎾</span></span>`;
+
+        html += `
+          <tr>
+            <td class="rankCell">${i + 1}</td>
+            <td>
+              <div class="resultPlayer">
+                ${avatar}
+                <span>${escapeHtml(p.name)}</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      html += "</table>";
+      document.getElementById("resultField").innerHTML = html;
+    }
+
+    // --- events ---
+    document.getElementById("leftField").addEventListener("click", () => sortList(-1));
+    document.getElementById("rightField").addEventListener("click", () => sortList(1));
+    document.getElementById("bothBtn").addEventListener("click", () => sortList(0));
+    document.getElementById("noOpinionBtn").addEventListener("click", () => sortList(0));
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      // reset to original ordering
+      namMember = players.map((_, i) => i);
+      initList();
+      document.getElementById("resultField").innerHTML = "";
+    });
+
+    document.getElementById("shuffleBtn").addEventListener("click", () => {
+      // shuffle the base ordering so matchups vary
+      const order = players.map((_, i) => i);
+      shuffleArray(order);
+      namMember = order;
+      initList();
+      document.getElementById("resultField").innerHTML = "";
+    });
+
+    // start
+    initList();
+  </script>
+</body>
+</html>
