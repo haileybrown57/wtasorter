@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WTA Top 100 Sorter</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Times New Roman", serif;
+      color: #000;
+      background: #fff;
+    }
+    .wrap {
+      max-width: 760px;
+      margin: 28px auto;
+      padding: 0 16px 40px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      letter-spacing: 0.5px;
+    }
+    .instructions {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.45;
+    }
+    .status {
+      text-align: center;
+      margin: 18px 0 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 10px 8px;
+    }
+    td {
+      border: 1px solid #000;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .choice {
+      width: 40%;
+      height: 150px;
+      cursor: pointer;
+      padding: 12px;
+      font-size: 18px;
+      user-select: none;
+    }
+    .middle {
+      width: 20%;
+      height: 70px;
+      cursor: pointer;
+      padding: 10px;
+      font-size: 16px;
+      user-select: none;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    button {
+      font: inherit;
+      border: 1px solid #000;
+      background: #fff;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #f4f4f4;
+    }
+    .results {
+      margin-top: 22px;
+      text-align: center;
+    }
+    .results table {
+      width: 340px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      font-size: 16px;
+    }
+    .results th,
+    .results td {
+      border: 1px solid #000;
+      padding: 6px 8px;
+    }
+    .results th {
+      background: #e097d9;
+      color: #fff;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 26px;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+    @media (max-width: 560px) {
+      .choice { height: 130px; font-size: 16px; }
+      .middle { font-size: 14px; }
+      .results table { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>WTA TOP 100 SORTER</h1>
+      <p class="instructions">
+        Pick the player you prefer in each matchup to generate your personal ranking.<br>
+        Note: frequent ties or “no opinion” will reduce ranking precision.
+      </p>
+    </div>
+
+    <div id="battleNumber" class="status">battle #1<br>0% sorted.</div>
+
+    <table role="presentation">
+      <tr>
+        <td id="leftField" class="choice" rowspan="2"></td>
+        <td id="bothBtn" class="middle">I like both</td>
+        <td id="rightField" class="choice" rowspan="2"></td>
+      </tr>
+      <tr>
+        <td id="noOpinionBtn" class="middle">no opinion</td>
+      </tr>
+    </table>
+
+    <div class="controls">
+      <button id="resetBtn" type="button">Reset</button>
+      <button id="shuffleBtn" type="button">Shuffle & Reset</button>
+    </div>
+
+    <div id="resultField" class="results"></div>
+
+    <div class="footer">
+      <small>Top 100 WTA singles sorter (embedded in Tumblr via iframe).</small>
+    </div>
+  </div>
+
+  <script>
+    // === TOP 100 WTA PLAYERS (as provided) ===
+    var namMember = [
+      "Aryna Sabalenka",
+      "Iga Swiatek",
+      "Coco Gauff",
+      "Amanda Anisimova",
+      "Elena Rybakina",
+      "Jessica Pegula",
+      "Madison Keys",
+      "Jasmine Paolini",
+      "Mirra Andreeva",
+      "Ekaterina Alexandrova",
+      "Belinda Bencic",
+      "Clara Tauson",
+      "Linda Noskova",
+      "Elina Svitolina",
+      "Emma Navarro",
+      "Naomi Osaka",
+      "Liudmila Samsonova",
+      "Victoria Mboko",
+      "Karolina Muchova",
+      "Elise Mertens",
+      "Diana Shnaider",
+      "Leylah Fernandez",
+      "Jelena Ostapenko",
+      "Qinwen Zheng",
+      "Paula Badosa",
+      "Marta Kostyuk",
+      "Dayana Yastremska",
+      "Sofia Kenin",
+      "Emma Raducanu",
+      "Veronika Kudermetova",
+      "McCartney Kessler",
+      "Maya Joint",
+      "Anna Kalinskaya",
+      "Marketa Vondrousova",
+      "Iva Jovic",
+      "Lois Boisson",
+      "Daria Kasatkina",
+      "Ann Li",
+      "Jaqueline Cristian",
+      "Eva Lys",
+      "Jessica Bouzas Maneiro",
+      "Marie Bouzkova",
+      "Sorana Cirstea",
+      "Ashlyn Krueger",
+      "Tatjana Maria",
+      "Laura Siegemund",
+      "Anastasia Pavlyuchenkova",
+      "Katerina Siniakova",
+      "Emiliana Arango",
+      "Anastasia Potapova",
+      "Cristina Bucsa",
+      "Maria Sakkari",
+      "Alexandra Eala",
+      "Magda Linette",
+      "Elsa Jacquemot",
+      "Janice Tjen",
+      "Xinyu Wang",
+      "Beatriz Haddad Maia",
+      "Magdalena Frech",
+      "Tereza Valentova",
+      "Hailey Baptiste",
+      "Anna Blinkova",
+      "Peyton Stearns",
+      "Danielle Collins",
+      "Barbora Krejcikova",
+      "Solana Sierra",
+      "Olga Danilovic",
+      "Sonay Kartal",
+      "Donna Vekic",
+      "Antonia Ruzic",
+      "Yulia Putintseva",
+      "Rebecca Sramkova",
+      "Francesca Jones",
+      "Anna Bondar",
+      "Ons Jabeur",
+      "Varvara Gracheva",
+      "Camila Osorio",
+      "Alycia Parks",
+      "Renata Zarazua",
+      "Ajla Tomljanovic",
+      "Shuai Zhang",
+      "Viktorija Golubic",
+      "Elisabetta Cocciaretto",
+      "Petra Marcinko",
+      "Caty McNally",
+      "Ella Seidel",
+      "Simona Waltert",
+      "Elena-Gabriela Ruse",
+      "Suzan Lamens",
+      "Lulu Sun",
+      "Panna Udvardy",
+      "Sara Bejlek",
+      "Katie Volynets",
+      "Moyuka Uchijima",
+      "Julia Grabher",
+      "Oleksandra Oliynykova",
+      "Kamilla Rakhimova",
+      "Kimberly Birrell",
+      "Dalma Galfi",
+      "Oksana Selekhmeteva"
+    ];
+
+    // === sorter engine (unchanged logic) ===
+    var lstMember = [], parent = [], equal = [], rec = [];
+    var cmp1, cmp2, head1, head2, nrec;
+    var numQuestion, totalSize, finishSize, finishFlag;
+
+    function shuffleArray(a) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+    }
+
+    function initList() {
+      lstMember = []; parent = []; equal = []; rec = [];
+      var n = 0;
+      lstMember[n] = [];
+      for (var i = 0; i < namMember.length; i++) lstMember[n][i] = i;
+      parent[n] = -1;
+      totalSize = 0;
+      n++;
+
+      for (var i2 = 0; i2 < lstMember.length; i2++) {
+        if (lstMember[i2].length >= 2) {
+          var mid = Math.ceil(lstMember[i2].length / 2);
+          lstMember[n] = lstMember[i2].slice(0, mid);
+          totalSize += lstMember[n].length;
+          parent[n++] = i2;
+          lstMember[n] = lstMember[i2].slice(mid);
+          totalSize += lstMember[n].length;
+          parent[n++] = i2;
+        }
+      }
+
+      for (var k = 0; k <= namMember.length; k++) equal[k] = -1;
+      cmp1 = lstMember.length - 2;
+      cmp2 = lstMember.length - 1;
+      head1 = head2 = nrec = 0;
+      numQuestion = 1;
+      finishSize = finishFlag = 0;
+      showImage();
+    }
+
+    function sortList(flag) {
+      if (finishFlag) return;
+      function push(v){ rec[nrec++] = v; finishSize++; }
+
+      if (flag < 0) push(lstMember[cmp1][head1++]);
+      else if (flag > 0) push(lstMember[cmp2][head2++]);
+      else {
+        push(lstMember[cmp1][head1++]);
+        equal[rec[nrec - 1]] = lstMember[cmp2][head2];
+        push(lstMember[cmp2][head2++]);
+      }
+
+      if (head1 === lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
+        for (var i = 0; i < rec.length; i++)
+          lstMember[parent[cmp1]][i] = rec[i];
+        lstMember.pop(); lstMember.pop();
+        cmp1 -= 2; cmp2 -= 2;
+        head1 = head2 = rec.length = nrec = 0;
+      }
+
+      if (cmp1 < 0) {
+        document.getElementById("battleNumber").innerHTML =
+          "complete<br>100% sorted.";
+        showResult();
+        finishFlag = 1;
+      } else showImage();
+    }
+
+    function showImage() {
+      document.getElementById("battleNumber").innerHTML =
+        "battle #" + numQuestion++;
+      document.getElementById("leftField").textContent =
+        namMember[lstMember[cmp1][head1]];
+      document.getElementById("rightField").textContent =
+        namMember[lstMember[cmp2][head2]];
+    }
+
+    function showResult() {
+      var r = 1, html = "<table><tr><th>rank</th><th>player</th></tr>";
+      for (var i = 0; i < namMember.length; i++)
+        html += "<tr><td>"+(r++)+"</td><td>"+namMember[lstMember[0][i]]+"</td></tr>";
+      html += "</table>";
+      document.getElementById("resultField").innerHTML = html;
+    }
+
+    leftField.onclick = () => sortList(-1);
+    rightField.onclick = () => sortList(1);
+    bothBtn.onclick = noOpinionBtn.onclick = () => sortList(0);
+    resetBtn.onclick = () => initList();
+    shuffleBtn.onclick = () => { shuffleArray(namMember); initList(); };
+
+    initList();
+  </script>
+</body>
+</html>
